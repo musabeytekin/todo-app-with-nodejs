@@ -10,20 +10,33 @@ app.use(express.static("css"));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.set("view engine", "ejs")
 
+const check = (element, list) => {
+    for (item of list) {
+        if (item === element)
+            return true;
+    }
+    return false;
+}
+
 app.get("/", (req, res) => {
-    res.render("list", { listTitle: date(), items: items });
+    res.render("list", { listTitle: date.getDate(), items: items });
 })
 
 app.post("/", (req, res) => {
     let item = req.body.newTask;
     if (item != "") {
-        if (req.body.list === "Work") {
-            workItems.push(item);
+        if (req.body.list === "Work" && !check(item, workItems)) {
+        workItems.push(item);
             res.redirect("/work");
         }
-        else {
+        else if (req.body.list === "Work" && check(item, workItems)) {
+            res.redirect("/work");
+        }
+        else if (!check(item, items)) {
             items.push(item);
             res.redirect("/");
+        } else {
+            res.redirect("/")
         }
     }
 })
@@ -34,7 +47,7 @@ app.get("/work", (req, res) => {
 
 app.post("/work", (req, res) => {
     let item = req.body.newTask;
-    if (item != "") {
+    if (item != "" && !check(item, workItems)) {
         workItems.push(item);
     }
     res.redirect("/work");
